@@ -3,23 +3,7 @@
 
 int main(int argc, char* argv[]) {
 
-    // check heving two arguments
-    if (argc < 2)
-    {
-        std::cout << "Using: " << argv[0] << " <path to BMP file>" << "\n"; // If the file path is not specified
-        return 0;
-    }
-
     BMP_File bmp_file;
-    if (!bmp_file.Load_image(argv[1]))  // Create array for BMP imagine
-    {
-        std::cerr << "Failed to load BMP file." << "\n";
-        return -1;
-    }
-    else
-    {
-        std::cout << "BMP File read succesful." << "\n";
-    }
     
     
     std::cout << "BMP file size:" << bmp_file.bmp_header.file_size << " byte" << "\n";
