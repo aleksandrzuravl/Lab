@@ -1,4 +1,4 @@
-#include "bmp_reader.h"
+#include "reader_bmp.h"
 #include <iostream>
 
 int main(int argc, char* argv[]) {
