@@ -1,4 +1,4 @@
-#include "bmp_reader.h"
+#include "reader_bmp.h"
 #include <iostream>
 #include <fstream>
 #include <memory>
@@ -81,7 +81,7 @@ std::unique_ptr<BMP_File> BMP_File::rotate_contra_clockwise() {
     // swap width and height
     std::swap(nf_BMP->dib_header.width, nf_BMP->dib_header.height);
 
-    nf_BMP->file_data = new RGB[nf_bmp->dib_header.width * nf_bmp->dib_header.height];
+    nf_BMP->file_data = new RGB[nf_BMP->dib_header.width * nf_BMP->dib_header.height];
 
     for (uint32_t y = 0; y < dib_header.height; ++y) {
         for (uint32_t x = 0; x < dib_header.width; ++x) {
