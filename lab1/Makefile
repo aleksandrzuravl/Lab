@@ -1,26 +1,49 @@
+# Compiler and flags
 CXX = g++
-CXXFLAGS = -Werror -Wpedantic -Wall -std=c++17
+CXXFLAGS = -Werror -Wpedantic -Wall -std=c++20
+LDFLAGS = 
 
-TARGET = read_BMP
-ALLNEWBMP = BMP_clockwise.bmp BMP_contra_clockwise.bmp 
+# Directories
+BUILDDIR = build
+BINDIR = bin
 
-SRC_FILES = $(wildcard *.cpp)
+# Targets
+TARGET = $(BINDIR)/read_BMP
+ALLNEWBMP = BMP_clockwise.bmp BMP_clockwise_filter.bmp BMP_contra_clockwise.bmp BMP_contra_clockwise_filter.bmp 
 
-OBJ_FILES = $(SRC_FILES:.cpp=.o)
+# Source files
+SRCS = $(wildcard *.cpp)
+OBJS = $(patsubst %.cpp,$(BUILDDIR)/%.o,$(SRCS))
 
-all: $(TARGET)
+# Default target
+all: $(BUILDDIR) $(BINDIR) $(TARGET)
 
-$(TARGET): $(OBJ_FILES)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+# Create directories if they don't exist
+$(BUILDDIR):
+	@mkdir -p $(BUILDDIR)
 
-%.o: %.cpp
+$(BINDIR):
+	@mkdir -p $(BINDIR)
+
+# Main executable
+$(TARGET): $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+# Compile source files to objects
+$(BUILDDIR)/%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# Clean build artifacts
 clean:
-	rm -f *.o $(TARGET) $(ALLNEWBMP)
+	rm -rf $(BUILDDIR) $(BINDIR) $(ALLNEWBMP)
 
+# Run the program
 run: $(TARGET)
 	./$(TARGET) example.bmp
 
-run test: $(TARGET)
+# Run with valgrind memory checking
+test: $(TARGET)
 	valgrind --leak-check=full ./$(TARGET) example.bmp
+
+# Phony targets
+.PHONY: all clean run test
