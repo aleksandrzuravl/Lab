@@ -1,7 +1,5 @@
 #include "bmp_reader.h"
-#include <iostream>
-#include <fstream>
-#include <memory>
+
 
 // Method for loading BMP file
 bool BMP_File::Load_BMP_File(const char* file_name) {
@@ -75,61 +73,73 @@ void BMP_File::Save_BMP_File(const char* output_filename) {
 }
 
 // Method for flip BMP file contra clockwise
-std::unique_ptr<BMP_File> BMP_File::flip_BMP_90_contra_clockwise() {
+std::unique_ptr<BMP_File> BMP_File::flip_BMP_90_contra_clockwise(int thread_count) {
     auto new_bmp_file = std::make_unique<BMP_File>();
-    
-    // Copy header in new BMP file
+
+    // Copy headers and swap dimensions
     new_bmp_file->bmp_header = bmp_header;
     new_bmp_file->dib_header = dib_header;
-    
-    // Swap width and height
     std::swap(new_bmp_file->dib_header.width, new_bmp_file->dib_header.height);
 
     new_bmp_file->file_data = new RGB[new_bmp_file->dib_header.width * new_bmp_file->dib_header.height];
 
-    for (uint32_t y = 0; y < dib_header.height; ++y) {
-        for (uint32_t x = 0; x < dib_header.width; ++x) {
-        
-            // Search old index pixel
-            uint32_t old_index = y * dib_header.width + x;
-            
-            // Colculate new position for pixel
-            uint32_t new_index = (dib_header.width - 1 - x) * new_bmp_file->dib_header.width + y;
-            
-            // Copy pixel on new position
-            new_bmp_file->file_data[new_index] = file_data[old_index];
+    auto worker = [&](int start_row, int end_row) {
+        for (int y = start_row; y < end_row; ++y) {
+            for (uint32_t x = 0; x < dib_header.width; ++x) {
+                uint32_t old_index = y * dib_header.width + x;
+                uint32_t new_index = (dib_header.width - 1 - x) * new_bmp_file->dib_header.width + y;
+                new_bmp_file->file_data[new_index] = file_data[old_index];
+            }
         }
+    };
+
+    int total_rows = dib_header.height;
+    int rows_per_thread = total_rows / thread_count;
+    std::vector<std::thread> threads;
+
+    for (int i = 0; i < thread_count; ++i) {
+        int start_row = i * rows_per_thread;
+        int end_row = (i == thread_count - 1) ? total_rows : start_row + rows_per_thread;
+        threads.emplace_back(worker, start_row, end_row);
     }
+
+    for (auto& t : threads) t.join();
 
     return new_bmp_file;
 }
 
 // Method for flip BMP file clockwise
-std::unique_ptr<BMP_File> BMP_File::flip_BMP_90_clockwise() {
+std::unique_ptr<BMP_File> BMP_File::flip_BMP_90_clockwise(int thread_count) {
     auto new_bmp_file = std::make_unique<BMP_File>();
-    
-    // Copy header in new BMP file
+
+    // Copy headers and swap dimensions
     new_bmp_file->bmp_header = bmp_header;
     new_bmp_file->dib_header = dib_header;
-    
-    // Swap width and height
     std::swap(new_bmp_file->dib_header.width, new_bmp_file->dib_header.height);
 
     new_bmp_file->file_data = new RGB[new_bmp_file->dib_header.width * new_bmp_file->dib_header.height];
 
-    for (uint32_t y = 0; y < dib_header.height; ++y) {
-        for (uint32_t x = 0; x < dib_header.width; ++x) {
-        
-            // Search old index pixel
-            uint32_t old_index = y * dib_header.width + x;
-            
-            // Colculate new position for pixel
-            uint32_t new_index = x * new_bmp_file->dib_header.width + (dib_header.height - 1 - y);
-            
-            // Copy pixel on new position
-            new_bmp_file->file_data[new_index] = file_data[old_index];
+    auto worker = [&](int start_row, int end_row) {
+        for (int y = start_row; y < end_row; ++y) {
+            for (uint32_t x = 0; x < dib_header.width; ++x) {
+                uint32_t old_index = y * dib_header.width + x;
+                uint32_t new_index = x * new_bmp_file->dib_header.width + (dib_header.height - 1 - y);
+                new_bmp_file->file_data[new_index] = file_data[old_index];
+            }
         }
+    };
+
+    int total_rows = dib_header.height;
+    int rows_per_thread = total_rows / thread_count;
+    std::vector<std::thread> threads;
+
+    for (int i = 0; i < thread_count; ++i) {
+        int start_row = i * rows_per_thread;
+        int end_row = (i == thread_count - 1) ? total_rows : start_row + rows_per_thread;
+        threads.emplace_back(worker, start_row, end_row);
     }
+
+    for (auto& t : threads) t.join();
 
     return new_bmp_file;
 }

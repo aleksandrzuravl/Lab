@@ -1,0 +1,40 @@
+name: Start build and testing
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: Run C++ tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y g++ cmake libgtest-dev valgrind
+
+      - name: Build and run tests
+        run: |
+          make
+          make test
+          make clean
+
+  build:
+    name: build all project
+    runs-on: ubuntu-latest
+    
+    needs: test
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get install g++ cmake libgtest-dev
+
+      - name: Build project
+        run: |
+          make
+          make run
+          make clean
