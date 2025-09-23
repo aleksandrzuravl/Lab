@@ -1,12 +1,6 @@
 name: Start build and testing
 
-on:
-  push:
-    branches:
-      - add_Multithreading
-  pull_request:
-    branches:
-      - add_Multithreading
+on: [push, pull_request]
 
 jobs:
   test:
