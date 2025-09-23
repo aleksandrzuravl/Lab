@@ -2,8 +2,11 @@
 #define BMP_READER_H
 
 #include <cstdint> // For precise bit control
+#include <vector>
 #include <iostream>
+#include <fstream>
 #include <memory>
+#include <thread>
 
 #pragma pack(push, 1) // Disable compiler alignment of structures
 
@@ -65,8 +68,8 @@ public:
     virtual void Save_BMP_File(const char* output_filename);
 
     // Methods flipped BMP File
-    std::unique_ptr<BMP_File> flip_BMP_90_contra_clockwise();
-    std::unique_ptr<BMP_File> flip_BMP_90_clockwise();
+    std::unique_ptr<BMP_File> flip_BMP_90_contra_clockwise(int thread_count=4);
+    std::unique_ptr<BMP_File> flip_BMP_90_clockwise(int thread_count=4);
 };
 
 #pragma pack(pop)  // Shutdown <pragma pack(push, 1)>
